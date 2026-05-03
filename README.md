@@ -95,9 +95,22 @@
 
 *图 1 — 皮肤疾病诊断模型架构*
 
+**支持分类的 8 种皮肤疾病：**
+
+| 英文代码 | 中文名称 |
+|---------|---------|
+| MEL     | 黑色素瘤 |
+| NV      | 色素痣   |
+| BCC     | 基底细胞癌 |
+| SCC     | 鳞状细胞癌 |
+| AK      | 光化性角化病 |
+| BKL     | 良性角化病 |
+| DF      | 皮肤纤维瘤 |
+| VASC    | 血管病变 |
+
 **核心特点：**
 - 跨模态注意力池化机制：融合图像与元数据信息
-- 支持 7 种常见皮肤疾病分类
+- 模型验证准确率：87.86%
 
 **输入：** 皮肤病变图像、患者年龄、性别、病灶部位
 
@@ -407,7 +420,7 @@ Smart-Healthcare-Q-A-Assistant/
 | `DEVICE` | 推理设备 | 自动检测 `cuda` / `cpu` |
 | `MODEL_PATH` | 模型权重路径 | `models/weights/best_model.pth` |
 | `IMAGE_SIZE` | 输入图像尺寸 | 224 |
-| `NUM_CLASSES` | 分类类别数 | 7 |
+| `NUM_CLASSES` | 分类类别数 | 8 |
 | `RAGFLOW_API_URL` | RAGFlow 服务地址 | `http://localhost:80` |
 | `RAGFLOW_AUTHORIZATION` | RAGFlow API Key | 需自行配置 |
 | `RAGFLOW_CHAT_ID` | 聊天助手 ID | 需自行配置 |

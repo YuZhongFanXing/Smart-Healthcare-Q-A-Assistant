@@ -10,7 +10,7 @@ import torch
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # ========== 多模态皮肤分类模型配置 ==========
-NUM_CLASSES = 7
+NUM_CLASSES = 8
 IMAGE_SIZE = 224
 
 # 模型权重路径（相对于项目根目录）

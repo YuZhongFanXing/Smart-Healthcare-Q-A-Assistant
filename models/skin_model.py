@@ -7,7 +7,7 @@
                                                         ├→ Cross-Modal Attention → Classifier
   Metadata (age/sex/site) → MLP Encoder ───────────────┘
 
-支持 7 类皮肤病分类：MEL, NV, BCC, AK, BKL, DF, VASC
+支持 8 类皮肤病分类：MEL, NV, BCC, AK, BKL, DF, VASC, SCC
 """
 
 import torch
