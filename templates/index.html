@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能医疗助理 - AI 皮肤诊断系统</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- ===== 头部导航 ===== -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-user-md"></i>
+                <span>智能医疗助理</span>
+            </div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-number">AI</div>
+                    <div class="stat-label">智能诊断</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">在线服务</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">专业</div>
+                    <div class="stat-label">医疗建议</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 主布局 ===== -->
+    <div class="main-container">
+
+        <!-- ===== 聊天面板 ===== -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fas fa-robot"></i> 医疗智能助理
+                </div>
+                <div class="chat-subtitle">基于专业医学知识库的 AI 助手</div>
+            </div>
+
+            <div class="assistant-status status-loading" id="assistantStatus">
+                <i class="fas fa-spinner fa-spin"></i>
+                正在初始化聊天会话...
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="message assistant-message">
+                    <div class="message-avatar assistant-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">正在初始化聊天助手，请稍候...</div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="input-area">
+                    <textarea id="chatInput" placeholder="请等待会话初始化完成..." disabled rows="1"></textarea>
+                    <button class="send-button" id="sendButton" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 右侧面板 ===== -->
+        <div class="analysis-panel">
+
+            <!-- 标签切换 -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('skin')">皮肤诊断</button>
+                <button class="tab-btn" onclick="switchTab('kb')">知识库上传</button>
+            </div>
+
+            <!-- ===== 皮肤诊断面板 ===== -->
+            <div class="panel-card" id="skinPanel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-microscope"></i> 皮肤症状分析
+                    </div>
+                    <div class="panel-subtitle">AI 多模态皮肤疾病诊断</div>
+                </div>
+                <div class="panel-content">
+                    <div class="metadata-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="patientAge">
+                                    <i class="fas fa-calendar-alt"></i> 年龄
+                                </label>
+                                <input type="number" id="patientAge" class="form-input" placeholder="请输入年龄" min="0" max="120">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="patientSex">
+                                    <i class="fas fa-venus-mars"></i> 性别
+                                </label>
+                                <select id="patientSex" class="form-select">
+                                    <option value="unknown">未知</option>
+                                    <option value="male">男性</option>
+                                    <option value="female">女性</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="anatomSite">
+                                <i class="fas fa-map-marker-alt"></i> 病灶部位
+                            </label>
+                            <select id="anatomSite" class="form-select">
+                                <option value="unknown">未知</option>
+                                <option value="head/neck">头颈部</option>
+                                <option value="upper extremity">上肢</option>
+                                <option value="lower extremity">下肢</option>
+                                <option value="torso">躯干</option>
+                                <option value="anterior torso">前躯干</option>
+                                <option value="posterior torso">后躯干</option>
+                                <option value="oral/genital">口腔/生殖器</option>
+                                <option value="palms/soles">手掌/脚底</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="upload-area" id="dropArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <p class="upload-text">拖拽皮肤图片到此处或点击选择文件</p>
+                        <p style="font-size: 0.8rem; color: #999;">支持 JPG, PNG, GIF 格式</p>
+                        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+                    </div>
+
+                    <div class="preview-container">
+                        <img id="previewImage" alt="预览图像">
+                        <div class="preview-info" id="previewInfo">
+                            <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                            图片已选择，请填写患者信息后点击"开始分析"
+                        </div>
+                    </div>
+
+                    <div class="action-buttons" id="actionButtons">
+                        <button class="btn btn-primary" id="analyzeButton">
+                            <i class="fas fa-search"></i> 开始分析
+                        </button>
+                        <button class="btn btn-secondary" id="clearButton">
+                            <i class="fas fa-times"></i> 清除图片
+                        </button>
+                    </div>
+
+                    <div class="loading" id="skinLoading">
+                        <div class="spinner"></div>
+                        <p>AI 正在分析中，请稍候...</p>
+                    </div>
+
+                    <div class="result-section" id="skinResult">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary-color);">
+                            <i class="fas fa-chart-line"></i> 分析结果
+                        </h3>
+                        <div class="result-item">
+                            <span class="result-label">预测疾病：</span>
+                            <span class="result-value" id="diseaseName">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">英文代码：</span>
+                            <span class="result-value" id="diseaseCode">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">置信度：</span>
+                            <span class="result-value" id="confidenceValue">-</span>
+                        </div>
+                        <button class="btn btn-success" id="useResultButton" style="margin-top: 1rem; width: 100%;">
+                            <i class="fas fa-comments"></i> 将此结果发送给助理
+                        </button>
+                    </div>
+
+                    <div class="disclaimer">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--warning-color); margin-right: 0.5rem;"></i>
+                        <strong>重要提示：</strong>本系统提供的诊断结果仅供参考，不能替代专业医疗意见。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 知识库上传面板 ===== -->
+            <div class="panel-card" id="kbPanel" style="display:none;">
+                <div class="panel-header" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                    <div class="panel-title">
+                        <i class="fas fa-book-medical"></i> 知识库管理
+                    </div>
+                    <div class="panel-subtitle">上传文档至"药物说明书"知识库</div>
+                </div>
+                <div class="panel-content">
+                    <div class="upload-area kb-upload-area" id="kbDropArea">
+                        <div class="upload-icon kb-icon">
+                            <i class="fas fa-file-medical"></i>
+                        </div>
+                        <p class="upload-text">点击或拖拽文档上传</p>
+                        <p style="font-size: 0.8rem; color: #666;">支持 PDF, DOCX, TXT, MD 等格式</p>
+                        <input type="file" id="kbFileInput" accept=".pdf,.doc,.docx,.txt,.md" style="display:none;">
+                    </div>
+
+                    <div id="kbFileList" style="margin-top: 1rem;"></div>
+
+                    <div class="action-buttons" id="kbActionButtons" style="display:none;">
+                        <button class="btn btn-success" id="kbUploadButton">
+                            <i class="fas fa-upload"></i> 确认上传并解析
+                        </button>
+                    </div>
+
+                    <div class="loading" id="kbLoading">
+                        <div class="spinner" style="border-top-color: #27ae60;"></div>
+                        <p>正在上传并解析文档...</p>
+                    </div>
+
+                    <div class="disclaimer" style="background: #e8f8f5; border-color: #27ae60;">
+                        <i class="fas fa-info-circle" style="color: #27ae60; margin-right: 0.5rem;"></i>
+                        <strong>说明：</strong>上传的文档将自动添加到 RAGFlow 系统中，供 AI 助理在回答问题时参考。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
