@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>智能医疗助理</title><link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>智能医疗助理</title><link rel="stylesheet" href="/static/css/style.css"><style>.workspace{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px}.history{background:#fff;border:1px solid #dce4e6;border-radius:8px;padding:14px;overflow:auto}.history-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.history-head strong{font-size:14px}.history-head .new-chat{padding:6px 9px;font-size:12px}.session-list{display:flex;flex-direction:column;gap:5px}.session-item{padding:10px;border:0;border-radius:5px;background:transparent;text-align:left;color:#52636b;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.session-item:hover,.session-item.active{background:#e7f3f1;color:#176f68}@media(max-width:680px){.workspace{display:block}.history{border:0;border-radius:0;padding:10px 14px}.session-list{flex-direction:row;overflow:auto}.session-item{min-width:130px}.conversation{height:calc(100dvh - 132px)}}
+</style>
 </head>
 <body>
   <header class="topbar"><div class="brand"><span class="brand-mark">+</span><span>智能医疗助理</span></div><span class="status"><span class="status-dot"></span> 对话服务</span></header>
-  <main class="workspace"><section class="conversation" aria-label="医疗咨询对话">
-    <div class="conversation-head"><div><h1>医疗咨询</h1><p>在一段对话中描述症状、上传图片并补充信息</p></div><button id="newChat" class="new-chat" type="button">新对话</button></div>
+  <main class="workspace"><aside class="history" aria-label="会话历史"><div class="history-head"><strong>会话历史</strong><button id="newChat" class="new-chat" type="button">新对话</button></div><div id="sessionList" class="session-list"></div></aside><section class="conversation" aria-label="医疗咨询对话">
+    <div class="conversation-head"><div><h1>医疗咨询</h1><p>在一段对话中描述症状、上传图片并补充信息</p></div></div>
     <div id="chatContainer" class="messages" role="log" aria-live="polite"><div class="message assistant"><div class="avatar">+</div><div class="bubble">您好，请描述您的问题，也可以附上皮肤或口腔图片。我会在需要时继续询问相关信息。</div></div></div>
     <div class="composer-wrap"><div id="attachment" class="attachment" hidden><img id="imagePreview" alt="待发送图片预览"><span id="fileName"></span><button id="removeImage" type="button" aria-label="移除图片">×</button></div><div class="composer"><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden><button id="attachButton" class="icon-button" type="button" aria-label="上传图片">＋</button><textarea id="chatInput" rows="2" placeholder="描述症状，或上传图片后发送…" aria-label="消息内容"></textarea><button id="sendButton" class="send-button" type="button" aria-label="发送消息">➤</button></div><div class="composer-note">图片会与文字一起发送；缺少必要信息时，助理会继续询问。</div></div>
   </section></main>
