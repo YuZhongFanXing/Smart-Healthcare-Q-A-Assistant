@@ -1,5 +1,45 @@
 # Smart Healthcare Q&A Assistant
 
+## Multi-Agent Multimodal Workflow
+
+The assistant uses one unified conversation for text, images, and patient metadata. Users can upload a skin or oral image, describe symptoms, and provide age, sex, lesion location, medication, or patient ID in the same conversation. The Supervisor Agent collects required metadata before invoking the corresponding multimodal model.
+
+### Supervisor Agent
+
+The Supervisor Agent understands intent, maintains the shared task context, asks follow-up questions, selects tools, combines results, evaluates risk, and produces a sourced response. Skin analysis uses image + age + sex + skin lesion site. Oral analysis uses image + age + sex + oral lesion site.
+
+### Tool Registry
+
+| Tool | Purpose |
+| --- | --- |
+| `skin_lesion_classifier` | Multimodal skin lesion classification |
+| `oral_lesion_detector` | Multimodal oral lesion detection |
+| `symptom_analyzer` | Symptom analysis and candidate clues |
+| `medical_knowledge_search` | Internal guidelines, textbooks, and medicine knowledge |
+| `web_search` | Latest studies, approvals, and time-sensitive information |
+| `risk_assessor` | Risk assessment after diagnostic results |
+| `drug_interaction_checker` | Medication interaction checking |
+| `patient_history_query` | Patient history lookup |
+
+### RAG First, Web Search Second
+
+Medical questions are routed to `medical_knowledge_search` first. High-confidence internal knowledge is used directly. When knowledge is incomplete, outdated, or missing, `web_search` supplements it. External results carry source and date metadata and are filtered toward authoritative medical institutions; internal reviewed knowledge remains the primary reference when sources differ.
+
+### End-to-End Flow
+
+```text
+Unified text and image input
+    -> intent and modality understanding
+    -> collect required metadata through dialogue
+    -> invoke multimodal, symptom, history, or medication tools
+    -> query internal medical knowledge first
+    -> supplement with web search when needed
+    -> assess risk and combine evidence
+    -> return a sourced, confidence-aware multi-turn response
+```
+
+Every tool call records its name, status, confidence, sources, and result summary so the conversation can continue with the same context.
+
 智能医疗助理 — 基于多模态深度学习与 RAGFlow 知识库检索增强的医疗辅助诊断系统。
 
 > **版本号：** V1.0 &nbsp;|&nbsp; **编写日期：** 2025年12月2日

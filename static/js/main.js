@@ -107,7 +107,7 @@ function restoreSession(sessionId) {
 // ===== 消息处理 =====
 function sendMessage() {
     const message = chatInput.value.trim();
-    if (!message) return;
+    if (!message && !currentImageFile) return;
 
     chatInput.value = '';
     chatInput.style.height = 'auto';
@@ -129,16 +129,27 @@ function sendMessage() {
 
     const thinkingMessage = addMessage('正在思考中...', 'assistant');
 
-    fetch('/chat', {
+    const payload = currentImageFile ? new FormData() : JSON.stringify({ message: messageWithContext, session_id: currentSession });
+    if (currentImageFile) {
+        payload.append('message', messageWithContext || '请分析这张图片');
+        payload.append('session_id', currentSession);
+        payload.append('image', currentImageFile);
+        payload.append('modality', message.match(/口腔|牙龈|舌|口内/) ? 'oral' : 'skin');
+        payload.append('age', patientAge.value || '');
+        payload.append('sex', patientSex.value || '');
+        payload.append('anatom_site', anatomSite.value || '');
+    }
+    fetch(currentImageFile ? '/api/agent/chat' : '/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageWithContext, session_id: currentSession })
+        headers: currentImageFile ? undefined : { 'Content-Type': 'application/json' },
+        body: payload
     })
     .then(response => response.json())
     .then(data => {
         thinkingMessage.remove();
         if (data.status === 'success') {
-            addMessage(data.response || '抱歉，我暂时无法回答您的问题。', 'assistant');
+            if (data.need_user_input && data.questions) addMessage(data.questions.join('\n'), 'assistant');
+            else addMessage(data.response || '抱歉，我暂时无法回答您的问题。', 'assistant');
         } else {
             addMessage('出错: ' + (data.error || '未知错误'), 'assistant');
         }

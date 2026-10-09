@@ -27,11 +27,11 @@ LOG_MAX_BYTES = 1024 * 1024 * 10  # 10MB
 LOG_BACKUP_COUNT = 10
 
 # ========== RAGFlow API 配置 ==========
-RAGFLOW_API_URL = "http://localhost:80"
-RAGFLOW_AUTHORIZATION = "ragflow-I1YmQ2OWIyNTg4NDExZjA5MjQxNmVmNz"
-RAGFLOW_DATASET_NAME = "药物说明书"
-RAGFLOW_ASSIST_NAME = "aa-bot"
-RAGFLOW_CHAT_ID = "be09b0a858df11f0adea8efcd719a948"
+RAGFLOW_API_URL = os.getenv("RAGFLOW_API_URL", "http://localhost:80")
+RAGFLOW_AUTHORIZATION = os.getenv("RAGFLOW_AUTHORIZATION", "")
+RAGFLOW_DATASET_NAME = os.getenv("RAGFLOW_DATASET_NAME", "药物说明书")
+RAGFLOW_ASSIST_NAME = os.getenv("RAGFLOW_ASSIST_NAME", "aa-bot")
+RAGFLOW_CHAT_ID = os.getenv("RAGFLOW_CHAT_ID", "")
 
 # ========== 疾病中英文映射 ==========
 DISEASE_NAMES = {

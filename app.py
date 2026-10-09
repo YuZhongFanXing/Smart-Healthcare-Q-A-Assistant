@@ -25,6 +25,9 @@ from models.skin_model import SkinDiseasePredictor
 from routes.chat_routes import chat_bp
 from routes.skin_routes import skin_bp, init_predictor
 from routes.kb_routes import kb_bp
+from routes.agent_routes import agent_bp, init_agent
+from agents.supervisor import SupervisorAgent
+from tools.registry import build_registry
 
 
 def setup_logging(app):
@@ -69,6 +72,7 @@ def load_model():
 
     # 注入到路由
     init_predictor(predictor)
+    init_agent(SupervisorAgent(build_registry(predictor)))
 
     return predictor
 
@@ -85,6 +89,7 @@ def create_app():
     app.register_blueprint(chat_bp)
     app.register_blueprint(skin_bp)
     app.register_blueprint(kb_bp)
+    app.register_blueprint(agent_bp)
 
     # 加载 HTML 模板
     template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
