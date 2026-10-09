@@ -90,6 +90,8 @@ def create_app():
     app.register_blueprint(skin_bp)
     app.register_blueprint(kb_bp)
     app.register_blueprint(agent_bp)
+    # 让没有加载本地模型时的开发环境也能使用统一对话和追问流程。
+    init_agent(SupervisorAgent(build_registry(None)))
 
     # 加载 HTML 模板
     template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
