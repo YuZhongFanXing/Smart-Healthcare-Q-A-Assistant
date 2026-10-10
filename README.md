@@ -184,7 +184,22 @@ FLASK_HOST=0.0.0.0
 FLASK_PORT=5000
 ```
 
-## 六、项目结构
+## 六、前后端部署
+
+项目支持同源部署，也支持前端和后端分离部署。复制 `.env.example` 为 `.env`，将 `YOUR_SERVER_IPV4` 替换为服务器实际 IPv4 地址；前端独立部署时，将 `PUBLIC_API_URL` 设置为后端地址，并在 `ALLOWED_ORIGINS` 中填写前端域名。
+
+后端服务器启动参数：
+
+```bash
+SERVER_IPV4=YOUR_SERVER_IPV4
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5000
+python app.py
+```
+
+部署后端地址示例：`http://YOUR_SERVER_IPV4:5000`。生产环境建议使用 Nginx 或其他反向代理转发 HTTPS 请求到 Flask 服务，并限制 `ALLOWED_ORIGINS` 为实际前端域名。
+
+## 七、项目结构
 
 ```text
 .
@@ -200,7 +215,7 @@ FLASK_PORT=5000
 └── requirements.txt        # Python 依赖
 ```
 
-## 七、处理与安全
+## 八、处理与安全
 
 - 图片进行格式校验和模型预处理；
 - 工具结果包含状态、置信度和来源；
@@ -208,7 +223,7 @@ FLASK_PORT=5000
 - 上传文件使用白名单和临时目录；
 - API 密钥通过环境变量管理。
 
-## 八、致谢
+## 九、致谢
 
 - [RAGFlow](https://github.com/infiniflow/ragflow)
 - [ConvNeXt](https://github.com/facebookresearch/ConvNeXt)

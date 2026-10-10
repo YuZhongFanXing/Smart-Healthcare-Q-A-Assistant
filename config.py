@@ -50,5 +50,8 @@ AGE_MEAN = 54
 AGE_STD = 323
 
 # ========== Flask 配置 ==========
-FLASK_HOST = '0.0.0.0'
-FLASK_PORT = 5000
+FLASK_HOST = os.getenv('FLASK_HOST', '0.0.0.0')
+FLASK_PORT = int(os.getenv('FLASK_PORT', '5000'))
+SERVER_IPV4 = os.getenv('SERVER_IPV4', 'YOUR_SERVER_IPV4')
+PUBLIC_API_URL = os.getenv('PUBLIC_API_URL', '')
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '*')

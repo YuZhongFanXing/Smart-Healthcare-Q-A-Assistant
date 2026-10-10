@@ -14,7 +14,7 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, make_response
 
 from config import (
     DEVICE, MODEL_PATH, UPLOAD_FOLDER, LOG_DIR,
@@ -93,6 +93,13 @@ def create_app():
     # 让没有加载本地模型时的开发环境也能使用统一对话和追问流程。
     init_agent(SupervisorAgent(build_registry(None)))
 
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = os.getenv('ALLOWED_ORIGINS', '*')
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        return response
+
     # 加载 HTML 模板
     template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
     with open(template_path, 'r', encoding='utf-8') as f:
@@ -100,7 +107,9 @@ def create_app():
 
     @app.route('/')
     def index():
-        return render_template_string(INDEX_HTML)
+        response = make_response(render_template_string(INDEX_HTML, public_api_url=os.getenv('PUBLIC_API_URL', '')))
+        response.set_cookie('server_ipv4', os.getenv('SERVER_IPV4', 'YOUR_SERVER_IPV4'), httponly=False)
+        return response
 
     return app
 
