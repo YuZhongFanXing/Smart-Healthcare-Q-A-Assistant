@@ -21,13 +21,24 @@
 
 ![多模态多 Agent 工作台](docs/images/current_interface.png)
 
-### 2.1 统一会话
+### 2.1 统一会话与上下文
 
-用户可以在同一个会话中输入文字、上传一张或多张图片，并补充年龄、性别、病灶位置、症状、用药和患者编号。图片不再单独进入某个固定诊断页面，Agent 会结合对话内容判断图片类型。
+用户在同一个对话框中输入文字、上传图片，并通过自然语言补充年龄、性别、病灶位置、症状、用药和患者编号。系统保存 `session_id` 对应的任务上下文，因此 Agent 追问后，用户只需回答问题，不需要重新上传图片。
 
-### 2.2 Supervisor Agent
+### 2.2 Agent 角色与工具
 
-Supervisor Agent 负责理解用户意图、维护任务上下文、收集必要元数据、主动追问、选择工具、汇总结果、评估风险并生成多轮回复。
+| Agent | 负责内容 | 调用工具 |
+| --- | --- | --- |
+| **Supervisor Agent** | 总控任务，识别意图、拆解任务、维护上下文、安排其他 Agent、汇总结果 | 全部工具 |
+| **输入理解 Agent** | 判断文本、皮肤图片、口腔图片、用药问题或患者历史问题 | `symptom_analyzer`、图片模态判断 |
+| **元数据收集 Agent** | 检查多模态模型所需字段，缺少时在对话中追问 | `TaskContext` |
+| **图像诊断 Agent** | 结合图像和元数据执行专科识别 | `skin_lesion_classifier`、`oral_lesion_detector` |
+| **症状分析 Agent** | 从自然语言提取症状和病程线索 | `symptom_analyzer` |
+| **知识检索 Agent** | 查询内部医学知识，并决定是否补充外部搜索 | `medical_knowledge_search`、`web_search` |
+| **用药 Agent** | 分析正在使用的药物及相互作用 | `drug_interaction_checker` |
+| **病史 Agent** | 根据患者编号查询历史记录 | `patient_history_query` |
+| **风险评估 Agent** | 综合诊断置信度、症状、病史和异常信号评估风险 | `risk_assessor` |
+| **回答生成 Agent** | 把各 Agent 结果整理为带来源、日期、置信度和下一步建议的回复 | GPT API |
 
 皮肤识别所需元数据：年龄、性别、皮肤病灶部位。  
 口腔识别所需元数据：年龄、性别、口腔病变部位。
@@ -45,21 +56,93 @@ Supervisor Agent 负责理解用户意图、维护任务上下文、收集必要
 | `drug_interaction_checker` | 药物相互作用检查 |
 | `patient_history_query` | 患者历史查询 |
 
-### 2.4 RAG 与 Web Search
+### 2.4 RAG 与 Web Search 协同决策
 
-医学知识检索遵循内部知识优先的决策规则：先调用 `medical_knowledge_search`；命中且置信度充分时直接采用；内容不完整、需要更新或未命中时补充 `web_search`。外部结果保留来源、标题和日期，并优先采用权威医学机构信息。
-
-### 2.5 标准流程
+每个医学问题都先进入内部医学知识库，只有内部知识不足时才进行外部搜索：
 
 ```text
-统一文本和图片输入
-    -> 输入理解与任务拆解
-    -> 识别图片类型并收集必要元数据
-    -> 调用图像、症状、历史或用药工具
-    -> 优先检索内部医学知识
-    -> 必要时补充 Web Search
-    -> 汇总证据并评估风险
-    -> 返回带来源和置信度的多轮回复
+用户问题
+  ↓
+先查 medical_knowledge_search（内部 RAG）
+  ├─ 命中且置信度高 → 使用 RAG，不搜索
+  ├─ 命中但信息旧或不全 → 补充 web_search
+  └─ 未命中 → web_search
+                ↓
+          搜索结果过滤
+          - 只信权威源：WHO、NIH、NEJM、卫健委、官方药监机构
+          - 标注来源、标题和发布日期
+          - 过滤广告、营销页面和无法验证的内容
+          - 来源冲突时以内部 RAG 为准
+```
+
+RAG 负责稳定的指南、教材、药品说明和标准诊疗知识；Web Search 负责最新研究、罕见病进展、新药审批和疫情等时效性内容。两个结果会交给回答生成 Agent 统一整理。
+
+### 2.5 多 Agent 协同流程
+
+```text
+用户输入文本、图片和已有信息
+    -> Supervisor Agent 创建 TaskContext
+    -> 输入理解 Agent 判断场景
+    -> 元数据收集 Agent 检查必填项
+    -> 信息不足：向用户追问并等待下一轮
+    -> 信息完整：并行或串行调用专科 Agent
+    -> 知识检索 Agent 执行 RAG/Web 决策
+    -> 风险评估 Agent 汇总诊断与风险
+    -> 回答生成 Agent 返回最终回复和来源
+```
+
+### 2.6 典型场景
+
+**场景一：只有症状文本**
+
+```text
+“我最近反复口腔溃疡，很疼”
+ -> symptom_analyzer 提取疼痛、反复、口腔溃疡
+ -> medical_knowledge_search 查询常见原因和就医指南
+ -> risk_assessor 判断是否需要进一步就医
+ -> 回答生成 Agent 给出解释、追问和来源
+```
+
+**场景二：皮肤图片 + 元数据不完整**
+
+```text
+用户上传皮肤图片：“帮我看看”
+ -> Supervisor 判断为皮肤图片
+ -> 元数据收集 Agent 发现缺少年龄、性别、病灶部位
+ -> Agent 追问缺失信息
+ -> 用户补充后调用 skin_lesion_classifier
+ -> risk_assessor + RAG 解释结果和下一步建议
+```
+
+**场景三：口腔图片 + 症状描述**
+
+```text
+用户上传口腔图片：“舌头白斑，已经两周了”
+ -> 输入理解 Agent 判断为口腔场景
+ -> 追问年龄、性别和口腔具体部位
+ -> oral_lesion_detector 与 symptom_analyzer 协同
+ -> RAG 查询口腔白斑相关指南
+ -> risk_assessor 评估持续时间、疼痛和出血信号
+```
+
+**场景四：药物相互作用**
+
+```text
+“我正在服用药物 A 和药物 B，可以一起吃吗？”
+ -> drug_interaction_checker 查询相互作用
+ -> medical_knowledge_search 查询官方药品说明
+ -> 必要时 web_search 查询最新安全警示
+ -> 回答中标注来源、日期并给出咨询医生或药师的建议
+```
+
+**场景五：患者历史结合当前问题**
+
+```text
+用户提供 patient_id 和新的症状或图片
+ -> patient_history_query 查询既往诊断、用药和过敏记录
+ -> 图像/症状 Agent 分析当前输入
+ -> risk_assessor 对比历史变化
+ -> Supervisor 汇总为连续的患者上下文回复
 ```
 
 ## 三、接口
