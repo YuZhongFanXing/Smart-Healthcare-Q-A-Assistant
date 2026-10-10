@@ -30,15 +30,10 @@
 | Agent | 负责内容 | 调用工具 |
 | --- | --- | --- |
 | **Supervisor Agent** | 总控任务，识别意图、拆解任务、维护上下文、安排其他 Agent、汇总结果 | 全部工具 |
-| **输入理解 Agent** | 判断文本、皮肤图片、口腔图片、用药问题或患者历史问题 | `symptom_analyzer`、图片模态判断 |
-| **元数据收集 Agent** | 检查多模态模型所需字段，缺少时在对话中追问 | `TaskContext` |
-| **图像诊断 Agent** | 结合图像和元数据执行专科识别 | `skin_lesion_classifier`、`oral_lesion_detector` |
-| **症状分析 Agent** | 从自然语言提取症状和病程线索 | `symptom_analyzer` |
-| **知识检索 Agent** | 查询内部医学知识，并决定是否补充外部搜索 | `medical_knowledge_search`、`web_search` |
-| **用药 Agent** | 分析正在使用的药物及相互作用 | `drug_interaction_checker` |
-| **病史 Agent** | 根据患者编号查询历史记录 | `patient_history_query` |
-| **风险评估 Agent** | 综合诊断置信度、症状、病史和异常信号评估风险 | `risk_assessor` |
-| **回答生成 Agent** | 把各 Agent 结果整理为带来源、日期、置信度和下一步建议的回复 | GPT API |
+| **临床分析 Agent** | 协同症状分析和皮肤、口腔多模态识别 | `symptom_analyzer`、`skin_lesion_classifier`、`oral_lesion_detector` |
+| **知识研究 Agent** | 执行 RAG 优先、Web Search 补充和来源核验 | `medical_knowledge_search`、`web_search` |
+| **安全建议 Agent** | 综合病史、用药和诊断结果评估风险 | `patient_history_query`、`drug_interaction_checker`、`risk_assessor` |
+| **回答生成 Agent** | 将多 Agent 结果整理为带来源、日期、置信度和建议的回复 | GPT API |
 
 皮肤识别所需元数据：年龄、性别、皮肤病灶部位。  
 口腔识别所需元数据：年龄、性别、口腔病变部位。

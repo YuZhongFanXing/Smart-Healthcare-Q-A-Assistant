@@ -1,8 +1,12 @@
 from .context import TaskContext
+from .specialists import ClinicalAnalysisAgent, KnowledgeResearchAgent, SafetyRecommendationAgent
 
 class SupervisorAgent:
     def __init__(self, tools):
         self.tools = tools
+        self.clinical = ClinicalAnalysisAgent(tools)
+        self.knowledge = KnowledgeResearchAgent(tools)
+        self.safety = SafetyRecommendationAgent(tools)
 
     def _detect_modality(self, context):
         text = context.message.lower()
@@ -24,19 +28,11 @@ class SupervisorAgent:
             selected.append("skin_lesion_classifier" if context.modality == "skin" else "oral_lesion_detector")
         if context.message:
             selected.append("symptom_analyzer")
-        if context.patient_id:
-            selected.append("patient_history_query")
-        if any(x in context.message for x in ("药", "用药", "相互作用")):
-            selected.append("drug_interaction_checker")
+        context.tool_results.extend(self.clinical.run(context, selected))
         if context.message:
-            selected.append("medical_knowledge_search")
-        for name in dict.fromkeys(selected):
-            result = self.tools[name].run(context)
-            context.tool_results.append(result)
-            if name == "medical_knowledge_search" and (result.get("status") != "success" or result.get("confidence", 0) < 0.8):
-                context.tool_results.append(self.tools["web_search"].run(context))
-        risk = self.tools["risk_assessor"].run(context)
-        context.tool_results.append(risk)
+            context.tool_results.extend(self.knowledge.run(context))
+        context.tool_results.extend(self.safety.run(context, bool(context.patient_id), any(x in context.message for x in ("药", "用药", "相互作用"))))
+        risk = next((r for r in reversed(context.tool_results) if r.get("tool") == "risk_assessor"), {"risk_level": "unknown"})
         unavailable = [r["tool"] for r in context.tool_results if r.get("status") == "unavailable"]
         answer = self._compose(context, unavailable)
         return {"status": "success", "need_user_input": False, "response": answer, "tool_trace": context.tool_results,
